@@ -166,11 +166,19 @@ This is an early-stage project. Before contributing, please:
 
 ## License
 
-[Add license here]
+MIT License - see [LICENSE](LICENSE) file for details.
+
+Copyright (c) 2026 ZStudioVn
 
 ---
 
 ## Contact
 
-[Add contact info here]
+- **GitHub:** [ZStudioVn/Git-tracking](https://github.com/ZStudioVn/Git-tracking)
+- **Issues:** [Report bugs or request features](https://github.com/ZStudioVn/Git-tracking/issues)
+- **Discussions:** [Join the conversation](https://github.com/ZStudioVn/Git-tracking/discussions)
+
+---
+
+**Built with ❤️ by ZStudioVn**
 " 
