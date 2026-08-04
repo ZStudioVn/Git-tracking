@@ -7,12 +7,19 @@ const api = {
     add: (rootPath: string) => ipcRenderer.invoke('projects:add', rootPath) as Promise<unknown>,
     refresh: (id: string) => ipcRenderer.invoke('projects:refresh', id) as Promise<unknown>,
     diff: (id: string) => ipcRenderer.invoke('projects:diff', id) as Promise<unknown>,
+    log: (id: string) => ipcRenderer.invoke('projects:log', id) as Promise<unknown>,
+    tree: (id: string, dirPath?: string) => ipcRenderer.invoke('projects:tree', id, dirPath) as Promise<unknown>,
     remove: (id: string) => ipcRenderer.invoke('projects:remove', id) as Promise<unknown>,
     openFolder: (rootPath: string) => ipcRenderer.invoke('projects:open-folder', rootPath) as Promise<void>,
   },
   git: {
     inspect: (rootPath: string) => ipcRenderer.invoke('git:inspect', rootPath) as Promise<unknown>,
     run: (rootPath: string, args: string[]) => ipcRenderer.invoke('git:run', rootPath, args) as Promise<unknown>,
+    stage: (rootPath: string, paths: string[]) => ipcRenderer.invoke('git:stage', rootPath, paths) as Promise<unknown>,
+    unstage: (rootPath: string, paths: string[]) => ipcRenderer.invoke('git:unstage', rootPath, paths) as Promise<unknown>,
+    commit: (rootPath: string, message: string, author?: { name: string; email: string }) =>
+      ipcRenderer.invoke('git:commit', rootPath, message, author) as Promise<unknown>,
+    push: (rootPath: string) => ipcRenderer.invoke('git:push', rootPath) as Promise<unknown>,
   },
   gitConfig: {
     read: (rootPath: string) => ipcRenderer.invoke('git-config:read', rootPath) as Promise<unknown>,

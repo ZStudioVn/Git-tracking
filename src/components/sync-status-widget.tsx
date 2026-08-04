@@ -71,6 +71,22 @@ export function SyncStatus() {
     }
   };
 
+  const handleRetry = async (jobId: string) => {
+    try {
+      const res = await fetch('/api/sync', {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ jobId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Retry failed');
+      toast.success('Sync retry queued');
+      await fetchJobs();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Retry failed');
+    }
+  };
+
   const latestJob = jobs[0];
   const isInProgress = latestJob?.status === 'RUNNING' || latestJob?.status === 'PENDING';
 
@@ -133,7 +149,14 @@ export function SyncStatus() {
             <div>Started: {formatDate(latestJob.startedAt)}</div>
             {latestJob.completedAt && <div>Completed: {formatDate(latestJob.completedAt)}</div>}
             {latestJob.errorMessage && (
-              <div className="text-red-600 mt-2">Error: {latestJob.errorMessage}</div>
+              <div className="text-red-600 mt-2">
+                <div>Error: {latestJob.errorMessage}</div>
+                {latestJob.status === 'FAILED' && (
+                  <button onClick={() => void handleRetry(latestJob.id)} className="mt-2 underline">
+                    Retry sync
+                  </button>
+                )}
+              </div>
             )}
           </div>
         </div>

@@ -131,7 +131,7 @@ export default function DashboardPage() {
     <main className="mx-auto max-w-7xl p-6">
       <div className="mb-6">
         <h1 className="mb-2 text-3xl font-bold">Repository Dashboard</h1>
-        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="inline-flex overflow-hidden rounded border">
             {VIEW_TABS.map((tab) => (
               <button
@@ -142,6 +142,7 @@ export default function DashboardPage() {
                 {tab.label}
               </button>
             ))}
+            <Link href="/dashboard/logs" className="rounded border bg-white px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-50">System logs</Link>
           </div>
           {repo && <RepoSelector currentRepo={{ owner: repo.owner, name: repo.name }} />}
         </div>

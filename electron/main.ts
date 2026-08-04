@@ -2,7 +2,7 @@ import { app, BrowserWindow, dialog, ipcMain, shell, type IpcMainInvokeEvent } f
 import { join, resolve } from 'node:path';
 import { execFile, spawn, type ChildProcess } from 'node:child_process';
 import { promisify } from 'node:util';
-import { inspectLocalGit, getProjectDiff } from './services/local-git';
+import { inspectLocalGit, getProjectDiff, getProjectLog, getProjectTree, stageFiles, unstageFiles, commitChanges, pushProject } from './services/local-git';
 import { listProjects, saveProject, removeProject } from './services/projects';
 import { readGitConfig, writeGitConfig } from './services/git-config';
 
@@ -48,6 +48,33 @@ function createWindow(): void {
   }
 }
 
+async function requireRegistered(rootPath: unknown): Promise<string> {
+  if (typeof rootPath !== 'string') throw new Error('Invalid project path');
+  const project = (await listProjects()).find((item) => item.rootPath === rootPath);
+  if (!project) throw new Error('Project is not registered');
+  return rootPath;
+}
+
+function assertStringArray(value: unknown): string[] {
+  if (!Array.isArray(value) || !value.every((entry) => typeof entry === 'string')) {
+    throw new Error('Invalid paths');
+  }
+  return value as string[];
+}
+
+function assertAuthor(value: unknown): { name: string; email: string } | undefined {
+  if (value === undefined || value === null) return undefined;
+  if (typeof value !== 'object') throw new Error('Invalid author');
+  const author = value as { name?: unknown; email?: unknown };
+  if (typeof author.name !== 'string' || typeof author.email !== 'string') throw new Error('Invalid author');
+  return { name: author.name, email: author.email };
+}
+
+async function refreshAndSave(rootPath: string): Promise<unknown> {
+  const status = await inspectLocalGit(rootPath);
+  return saveProject(status);
+}
+
 function registerIpcHandlers(): void {
   ipcMain.handle('projects:list', async () => listProjects());
 
@@ -87,6 +114,21 @@ function registerIpcHandlers(): void {
     return getProjectDiff(project.rootPath);
   });
 
+  ipcMain.handle('projects:log', async (_event: IpcMainInvokeEvent, id: unknown) => {
+    if (typeof id !== 'string') throw new Error('Invalid project id');
+    const project = await listProjects().then((items) => items.find((item) => item.id === id));
+    if (!project) throw new Error('Project not found');
+    return getProjectLog(project.rootPath);
+  });
+
+  ipcMain.handle('projects:tree', async (_event: IpcMainInvokeEvent, id: unknown, dirPath: unknown) => {
+    if (typeof id !== 'string') throw new Error('Invalid project id');
+    if (dirPath !== undefined && typeof dirPath !== 'string') throw new Error('Invalid directory path');
+    const project = await listProjects().then((items) => items.find((item) => item.id === id));
+    if (!project) throw new Error('Project not found');
+    return getProjectTree(project.rootPath, dirPath ?? '');
+  });
+
   ipcMain.handle('projects:remove', async (_event: IpcMainInvokeEvent, id: unknown) => {
     if (typeof id !== 'string') throw new Error('Invalid project id');
     return removeProject(id);
@@ -100,6 +142,35 @@ function registerIpcHandlers(): void {
   ipcMain.handle('git:inspect', async (_event: IpcMainInvokeEvent, rootPath: unknown) => {
     if (typeof rootPath !== 'string') throw new Error('Invalid project path');
     return inspectLocalGit(rootPath);
+  });
+
+  ipcMain.handle('git:stage', async (_event: IpcMainInvokeEvent, rootPath: unknown, paths: unknown) => {
+    const project = await requireRegistered(rootPath);
+    const safePaths = assertStringArray(paths);
+    await stageFiles(project, safePaths);
+    return refreshAndSave(project);
+  });
+
+  ipcMain.handle('git:unstage', async (_event: IpcMainInvokeEvent, rootPath: unknown, paths: unknown) => {
+    const project = await requireRegistered(rootPath);
+    const safePaths = assertStringArray(paths);
+    await unstageFiles(project, safePaths);
+    return refreshAndSave(project);
+  });
+
+  ipcMain.handle('git:commit', async (_event: IpcMainInvokeEvent, rootPath: unknown, message: unknown, author: unknown) => {
+    const project = await requireRegistered(rootPath);
+    if (typeof message !== 'string') throw new Error('Invalid commit message');
+    const safeAuthor = assertAuthor(author);
+    const result = await commitChanges(project, message, safeAuthor);
+    await refreshAndSave(project);
+    return result;
+  });
+
+  ipcMain.handle('git:push', async (_event: IpcMainInvokeEvent, rootPath: unknown) => {
+    const project = await requireRegistered(rootPath);
+    await pushProject(project);
+    return refreshAndSave(project);
   });
 
   ipcMain.handle('git:run', async (_event: IpcMainInvokeEvent, rootPath: unknown, args: unknown) => {
