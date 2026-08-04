@@ -34,13 +34,28 @@ export async function GET(req: NextRequest) {
     if (!branchRecord) return NextResponse.json({ error: `Branch not found: ${branch}` }, { status: 404 });
 
     // BranchCommit keeps the indexed DAG membership for this branch.
+    const cursorCommit = cursor
+      ? await db.commit.findUnique({
+          where: { repositoryId_sha: { repositoryId: repo.id, sha: cursor } },
+          select: { sha: true, committedAt: true },
+        })
+      : null;
+    if (cursor && !cursorCommit) return NextResponse.json({ error: 'Invalid cursor' }, { status: 400 });
+
     const commits = await db.commit.findMany({
       where: {
         repositoryId: repo.id,
-        branches: { some: { branch: { name: branch } } },
-        ...(cursor ? { committedAt: { lt: await getCursorDate(repo.id, cursor) } } : {}),
+        branches: { some: { branch: { repositoryId: repo.id, name: branch } } },
+        ...(cursorCommit
+          ? {
+              OR: [
+                { committedAt: { lt: cursorCommit.committedAt } },
+                { committedAt: cursorCommit.committedAt, sha: { lt: cursorCommit.sha } },
+              ],
+            }
+          : {}),
       },
-      orderBy: { committedAt: 'desc' },
+      orderBy: [{ committedAt: 'desc' }, { sha: 'desc' }],
       take: limit + 1, // Fetch one extra to check if there are more
       select: {
         sha: true,
@@ -71,12 +86,4 @@ export async function GET(req: NextRequest) {
     logger.error({ err, branch }, 'GET /api/commits failed');
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-}
-
-async function getCursorDate(repositoryId: string, sha: string): Promise<Date> {
-  const commit = await db.commit.findUnique({
-    where: { repositoryId_sha: { repositoryId, sha } },
-    select: { committedAt: true },
-  });
-  return commit?.committedAt ?? new Date();
 }

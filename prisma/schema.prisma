@@ -26,6 +26,7 @@ model User {
   repositories Repository[]
   gitConfigs   GitConfig[]
   localProjects LocalProject[]
+  systemLogs   SystemLog[]
 }
 
 model Account {
@@ -88,6 +89,8 @@ model Repository {
   pullRequests PullRequest[]
   syncJobs    SyncJob[]
   syncCursors SyncCursor[]
+  webhookDeliveries WebhookDelivery[]
+  systemLogs SystemLog[]
   gitConfigs    GitConfig[]
   localProjects LocalProject[]
 }
@@ -279,6 +282,46 @@ model SyncJob {
   repository Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
 
   @@index([repositoryId, status])
+}
+
+model WebhookDelivery {
+  id           String   @id @default(cuid())
+  deliveryId   String
+  repositoryId String?
+  event        String
+  action       String?
+  receivedAt   DateTime @default(now())
+
+  repository Repository? @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+
+  @@unique([deliveryId])
+  @@index([repositoryId, receivedAt])
+}
+
+model SystemLog {
+  id           String        @id @default(cuid())
+  userId       String?
+  repositoryId String?
+  level        SystemLogLevel
+  category     String
+  message      String        @db.Text
+  context      Json?
+  requestId    String?
+  createdAt    DateTime      @default(now())
+
+  user       User?       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  repository Repository? @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([repositoryId, createdAt])
+  @@index([level, createdAt])
+  @@index([category, createdAt])
+}
+
+enum SystemLogLevel {
+  INFO
+  WARN
+  ERROR
 }
 
 enum SyncJobStatus {

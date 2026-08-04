@@ -4,6 +4,7 @@ import { db } from '@/lib/db';
 import { createOctokitForUser } from '@/lib/github/client';
 import { commitFiles } from '@/lib/github/git-data';
 import { z } from 'zod';
+import { recordSystemLog } from '@/lib/system-log';
 
 const schema = z.object({
   repositoryId: z.string().cuid(),
@@ -30,6 +31,7 @@ export async function POST(request: NextRequest) {
     });
     const author = input.author ?? (config ? { name: config.authorName, email: config.authorEmail } : undefined);
     const result = await commitFiles(octokit, repository.owner, repository.name, input.branch, input.message, input.files, input.expectedHead, author);
+    await recordSystemLog({ level: 'INFO', category: 'audit.commit', message: 'Repository commit created', userId: session.user.id, repositoryId: repository.id, context: { branch: input.branch, sha: result.sha, fileCount: input.files.length } });
     return NextResponse.json({ commit: result }, { status: 201 });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Commit failed';

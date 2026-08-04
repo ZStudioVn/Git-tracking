@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { z } from 'zod';
+import { recordSystemLog } from '@/lib/system-log';
 
 const configSchema = z.object({
   repositoryId: z.string().cuid().optional().nullable(),
@@ -34,5 +35,6 @@ export async function PUT(request: NextRequest) {
     create: { ...data, scopeKey, userId: session.user.id },
     update: data,
   });
+  await recordSystemLog({ level: 'INFO', category: 'audit.config', message: 'Git configuration updated', userId: session.user.id, repositoryId: data.repositoryId ?? undefined, context: { repositoryId: data.repositoryId, hasTemplate: Boolean(data.commitTemplate) } });
   return NextResponse.json({ config });
 }

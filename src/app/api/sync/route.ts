@@ -8,12 +8,15 @@ import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { logger } from '@/lib/logger';
 import { runSyncJob } from '@/lib/sync/worker';
+import { rateLimit } from '@/lib/security/rate-limit';
 
 export async function POST() {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
+  const limit = rateLimit(`sync:${session.user.id}`, 10, 60_000);
+  if (!limit.allowed) return NextResponse.json({ error: 'Too many sync requests' }, { status: 429, headers: { 'retry-after': String(limit.retryAfter) } });
 
   try {
     const repo = await db.repository.findFirst({
@@ -45,6 +48,30 @@ export async function POST() {
   } catch (err) {
     logger.error({ err }, 'POST /api/sync failed');
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+
+export async function PATCH(request: Request) {
+  const session = await auth();
+  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const limit = rateLimit(`sync-retry:${session.user.id}`, 10, 60_000);
+  if (!limit.allowed) return NextResponse.json({ error: 'Too many sync retry requests' }, { status: 429, headers: { 'retry-after': String(limit.retryAfter) } });
+
+  try {
+    const body = (await request.json()) as { jobId?: string };
+    if (!body.jobId) return NextResponse.json({ error: 'jobId is required' }, { status: 400 });
+    const job = await db.syncJob.findFirst({
+      where: { id: body.jobId, repository: { userId: session.user.id }, status: 'FAILED' },
+    });
+    if (!job) return NextResponse.json({ error: 'Failed job not found' }, { status: 404 });
+    const retry = await db.syncJob.create({
+      data: { repositoryId: job.repositoryId, type: job.type, retryCount: job.retryCount, availableAt: new Date() },
+    });
+    void runSyncJob(retry.id);
+    return NextResponse.json({ jobId: retry.id, status: retry.status }, { status: 202 });
+  } catch (error) {
+    logger.error({ error }, 'PATCH /api/sync failed');
+    return NextResponse.json({ error: 'Invalid retry request' }, { status: 400 });
   }
 }
 

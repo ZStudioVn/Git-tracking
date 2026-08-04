@@ -16,7 +16,9 @@ export async function compareRevisions(
   head: string,
 ): Promise<ComparisonResult> {
   const mergeBase = await getMergeBase(octokit, owner, repo, base, head);
-  const files = await getFileChanges(octokit, owner, repo, mergeBase ?? base, head);
+  // The workspace compares the revisions selected by the user. The merge base
+  // is metadata for context, not a replacement for the requested base.
+  const files = await getFileChanges(octokit, owner, repo, base, head);
 
   return {
     base,

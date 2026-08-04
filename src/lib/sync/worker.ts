@@ -10,6 +10,7 @@ import { syncBranches } from '@/lib/sync/strategies/branches';
 import { syncPullRequests } from '@/lib/sync/strategies/pulls';
 import { syncTags } from '@/lib/sync/strategies/tags';
 import { logger } from '@/lib/logger';
+import { recordSystemLog } from '@/lib/system-log';
 
 export async function runSyncJob(jobId: string): Promise<void> {
   const job = await db.syncJob.findUnique({
@@ -51,6 +52,7 @@ export async function runSyncJob(jobId: string): Promise<void> {
       { jobId, repoId: repository.id, owner: repository.owner, name: repository.name },
       'Starting sync job'
     );
+    await recordSystemLog({ level: 'INFO', category: 'sync', message: 'Sync job started', userId: repository.userId, repositoryId: repository.id, context: { jobId, type: job.type } });
 
     await syncBranches(octokit, repository.id, repository.owner, repository.name, repository.defaultBranch);
     const branches = await db.branch.findMany({ where: { repositoryId: repository.id, deletedAt: null }, select: { name: true } });
@@ -85,12 +87,14 @@ export async function runSyncJob(jobId: string): Promise<void> {
       },
       'Sync job completed'
     );
+    await recordSystemLog({ level: 'INFO', category: 'sync', message: 'Sync job completed', userId: repository.userId, repositoryId: repository.id, context: { jobId, imported: commitResult.imported, duration } });
 
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown sync error';
     const stack = error instanceof Error ? error.stack : undefined;
 
     logger.error({ jobId, error: message, stack }, 'Sync job failed');
+    await recordSystemLog({ level: 'ERROR', category: 'sync', message: 'Sync job failed', userId: job.repository.userId, repositoryId: job.repositoryId, context: { jobId, error: message, stack, retryCount: job.retryCount } });
 
     await db.syncJob.update({
       where: { id: jobId },

@@ -27,12 +27,13 @@ export async function getLineDiff(
     const file = data.files?.find((f) => f.filename === path);
     if (!file) return null;
 
-    if (!file.patch) {
+    const patchSize = file.patch ? Buffer.byteLength(file.patch, 'utf8') : 0;
+    const binary = !file.patch && file.additions === 0 && file.deletions === 0 && file.changes === 0;
+    if (binary) {
       return { path, patch: null, oversized: false, binary: true };
     }
 
-    const patchSize = file.patch ? Buffer.byteLength(file.patch, 'utf8') : 0;
-    if (file.changes > 10000 || patchSize > MAX_BLOB_SIZE) {
+    if (!file.patch || file.changes > 10000 || patchSize > MAX_BLOB_SIZE) {
       logger.warn({ path, changes: file.changes }, 'Diff too large, truncating');
       return { path, patch: null, oversized: true, binary: false };
     }

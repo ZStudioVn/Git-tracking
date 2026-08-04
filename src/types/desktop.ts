@@ -38,6 +38,32 @@ export interface GitRunResult {
   stderr: string;
 }
 
+export interface CommitResult {
+  sha: string;
+}
+
+export interface LogEntry {
+  sha: string;
+  message: string;
+  authorName: string;
+  authoredAt: string;
+  parents: string[];
+}
+
+export interface TreeEntry {
+  name: string;
+  path: string;
+  type: 'tree' | 'blob';
+  status: string;
+  lastCommit: { sha: string; message: string; timestamp: string } | null;
+}
+
+export interface ProjectTree {
+  rootPath: string;
+  dirPath: string;
+  entries: TreeEntry[];
+}
+
 export interface GitTrackingBridge {
   projects: {
     list: () => Promise<GitTrackingBridgeProject[]>;
@@ -45,6 +71,8 @@ export interface GitTrackingBridge {
     add: (rootPath: string) => Promise<GitTrackingBridgeProject>;
     refresh: (id: string) => Promise<{ project: GitTrackingBridgeProject; status: unknown }>;
     diff: (id: string) => Promise<ProjectDiff>;
+    log: (id: string) => Promise<LogEntry[]>;
+    tree: (id: string, dirPath?: string) => Promise<ProjectTree>;
     remove: (id: string) => Promise<boolean>;
     openFolder: (rootPath: string) => Promise<void>;
   };
