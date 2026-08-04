@@ -1,6 +1,6 @@
 # Git-Tracking: Tiến Độ Triển Khai
 
-> Cập nhật lần cuối: 2026-08-03
+> Cập nhật lần cuối: 2026-08-04
 
 ---
 
@@ -21,10 +21,10 @@
 
 | Phase | Tên | Trạng thái | Mục tiêu |
 |---|---|---|---|
-| **0** | Project Bootstrap | ⬜ Chưa bắt đầu | Khởi tạo, cấu hình, môi trường dev |
-| **1** | Foundation | ⬜ Chưa bắt đầu | Auth, DB schema, GitHub adapter, seed |
-| **2** | Git Navigation | ⬜ Chưa bắt đầu | Commit graph, file tree, blame |
-| **3** | Diff Workspace | ⬜ Chưa bắt đầu | Compare commits/branches, unified & split diff |
+| **0** | Project Bootstrap | ✅ Hoàn thành | Khởi tạo, cấu hình, môi trường dev |
+| **1** | Foundation | ✅ Hoàn thành (MVP) | Auth, DB schema, GitHub adapter, seed |
+| **2** | Git Navigation | ✅ Hoàn thành (MVP) | Commit graph, file tree, revision URLs |
+| **3** | Diff Workspace | ✅ Hoàn thành (MVP) | Compare commits/branches, on-demand line diff |
 | **4** | Sync & Automation | ⬜ Chưa bắt đầu | Scheduled polling, webhooks, BullMQ |
 | **5** | Workflow Intelligence | ⬜ Chưa bắt đầu | PR/issue grouping, reports, analytics |
 
@@ -72,45 +72,45 @@
 | 1A-06 | Schema: `PullRequest` (metadata only) | ✅ | |
 | 1A-07 | Schema: `SyncJob` (status state machine, cursor, retryCount) | ✅ | Thay BullMQ ở MVP — D-01 |
 | 1A-08 | Schema: `SyncCursor` (lastSyncedSha per branch) | ✅ | |
-| 1A-09 | Viết migration đầu tiên + `prisma generate` | ⬜ | Cần chạy `pnpm prisma:migrate` |
+| 1A-09 | Viết migration đầu tiên + `prisma generate` | ✅ | Migration đã có trong `prisma/migrations/` |
 | 1A-10 | `src/lib/db/index.ts` — Prisma client singleton | ✅ | |
 
 ### 1B — Error Taxonomy & Logging
 
 | # | Task | Trạng thái | Ghi chú |
 |---|---|---|---|
-| 1B-01 | Tạo `src/lib/errors.ts` — enum `AppError` + utility functions | ⬜ | Theo SETUP.md §4 |
-| 1B-02 | Tạo `src/lib/logger.ts` — pino với sync context | ⬜ | Theo SETUP.md §6 |
+| 1B-01 | Tạo `src/lib/errors.ts` — enum `AppError` + utility functions | ✅ | |
+| 1B-02 | Tạo `src/lib/logger.ts` — pino với sync context | ✅ | |
 
 ### 1C — GitHub Adapter
 
 | # | Task | Trạng thái | Ghi chú |
 |---|---|---|---|
-| 1C-01 | `src/lib/github/client.ts` — Octokit instance + token encryption | ⬜ | AES-256-GCM — D-03 |
-| 1C-02 | `src/lib/github/rate-limit.ts` — quota budget tracking | ⬜ | D-05 |
-| 1C-03 | `src/lib/github/repos.ts` — fetch repo metadata | ⬜ | |
-| 1C-04 | `src/lib/github/commits.ts` — fetch commits với cursor pagination | ⬜ | |
-| 1C-05 | `src/lib/github/branches.ts` — fetch branches | ⬜ | |
-| 1C-06 | `src/lib/github/pulls.ts` — fetch PR metadata | ⬜ | |
+| 1C-01 | `src/lib/github/client.ts` — Octokit instance + token encryption | ✅ | AES-256-GCM — D-03 |
+| 1C-02 | `src/lib/github/rate-limit.ts` — quota budget tracking | ✅ | D-05 |
+| 1C-03 | `src/lib/github/repos.ts` — fetch repo metadata | ✅ | |
+| 1C-04 | `src/lib/github/commits.ts` — fetch commits với cursor pagination | ✅ | |
+| 1C-05 | `src/lib/github/branches.ts` — fetch branches | ✅ | |
+| 1C-06 | `src/lib/github/pulls.ts` — fetch PR metadata | ✅ | |
 
 ### 1D — Auth
 
 | # | Task | Trạng thái | Ghi chú |
 |---|---|---|---|
-| 1D-01 | `src/lib/auth.ts` — NextAuth.js config với GitHub OAuth provider | ⬜ | D-03 |
-| 1D-02 | `src/app/api/auth/[...nextauth]/route.ts` | ⬜ | |
-| 1D-03 | Token encryption at rest (ENCRYPTION_KEY env) | ⬜ | Theo SETUP.md §9 |
-| 1D-04 | Middleware bảo vệ route dashboard | ⬜ | |
+| 1D-01 | `src/lib/auth.ts` — NextAuth.js config với GitHub OAuth provider | ✅ | D-03 |
+| 1D-02 | `src/app/api/auth/[...nextauth]/route.ts` | ✅ | |
+| 1D-03 | Token encryption at rest (ENCRYPTION_KEY env) | ✅ | Theo SETUP.md §9 |
+| 1D-04 | Middleware bảo vệ route dashboard | ✅ | |
 
 ### 1E — Seed Data
 
 | # | Task | Trạng thái | Ghi chú |
 |---|---|---|---|
-| 1E-01 | `prisma/seed.ts` với @faker-js/faker | ⬜ | Theo SETUP.md §11 |
-| 1E-02 | Seed: 1 user, 1 repo "acme/webapp", 3 branches | ⬜ | |
-| 1E-03 | Seed: 50 commits với DAG parent relationships | ⬜ | |
-| 1E-04 | Seed: 10 files, 3 PRs, 5 issues, 2 releases | ⬜ | |
-| 1E-05 | Seed: 3 SyncJob records, 2 webhook delivery records | ⬜ | |
+| 1E-01 | `prisma/seed.ts` với @faker-js/faker | ✅ | Theo SETUP.md §11 |
+| 1E-02 | Seed: 1 user, 1 repo "acme/webapp", 3 branches | ✅ | |
+| 1E-03 | Seed: 50 commits với DAG parent relationships | ✅ | |
+| 1E-04 | Seed: 10 files, 3 PRs, 5 issues, 2 releases | ✅ | |
+| 1E-05 | Seed: 3 SyncJob records, 2 webhook delivery records | ✅ | |
 
 **Output của Phase 1:** `pnpm prisma db seed` pass, auth login/logout hoạt động, GitHub adapter test pass.
 

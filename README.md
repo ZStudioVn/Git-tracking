@@ -8,7 +8,7 @@
 - What's different between two points in time?
 - Has the update reached GitHub and the shared server?
 
-**Status:** 🚧 Phase 0 — Project Bootstrap (see `docs/PROGRESS.md`)
+**Status:** 🚧 MVP foundation, navigation, and diff workspace implemented; production automation remains (see `docs/PROGRESS.md`)
 
 ---
 
@@ -27,6 +27,23 @@
 ---
 
 ## Getting Started
+
+### Recommended mode: local-first desktop
+
+This project is intended to run as a desktop app with a local web interface. The Electron shell wraps the Next.js UI, uses a native folder picker to add Git project folders, and runs Git operations on the same machine. Run:
+
+```bash
+npm install
+npm run desktop:dev
+```
+
+To build an installer:
+
+```bash
+npm run desktop:package
+```
+
+A browser-only mode also works (`pnpm dev`, open `http://localhost:3000`) but requires manually entering project paths and keeping the server on localhost.
 
 ### Prerequisites
 
@@ -123,17 +140,32 @@ See `docs/PROGRESS.md` for the full decision log. Key decisions:
 - **D-06:** Use library for commit graph lane layout
 - **D-08:** Every screen has a shareable URL (core design rule)
 
+## Git Command Center
+
+The dashboard provides safe command suggestions for local projects, including status, diff, commit, push, and project/global `git config` commands. It also supports a guarded one-file commit through the GitHub API; it does not execute shell commands on the server or force-push branches.
+
+In the desktop app, runnable suggestions (status, diff, push) get a **Run** button that executes the command directly against a registered local project via the Electron bridge (`git:run` IPC) — whitelisted commands only, never through a shell. Web mode keeps copy-only behavior.
+
+## Local Projects & Desktop
+
+- **Add projects** via native folder picker (desktop) or by path (web fallback).
+- **Dashboard tabs** (`All | GitHub | Local`) switch context between synced GitHub repos and local working copies.
+- **Project detail view** (`/dashboard/local/[id]`) lists changed files grouped by **Conflicts / Staged / Modified / Untracked**, with a per-file colored diff viewer, copy-diff, and open-folder (desktop).
+- **Ahead/behind indicators** (`↑ ahead / ↓ behind`) show how far the local branch is from its upstream.
+- **Auto-refresh**: local project status refreshes on a 30s poll, on window focus, and immediately after commits or desktop-run commands.
+- **Toast notifications** replace `alert()` across the UI for success/error feedback.
+
 ---
 
 ## Development Phases
 
 | Phase | Status | Focus |
 |---|---|---|
-| **0** | ⬜ In Progress | Project Bootstrap (tooling, config, CI) |
-| **1** | ⬜ Planned | Foundation (auth, DB schema, GitHub adapter, seed) |
-| **2** | ⬜ Planned | Git Navigation (commit graph, file tree, blame) |
-| **3** | ⬜ Planned | Diff Workspace (compare, unified/split diff) |
-| **4** | ⬜ Planned | Sync & Automation (webhooks, BullMQ, polling) |
+| **0** | ✅ Complete | Project Bootstrap (tooling, config, CI) |
+| **1** | ✅ MVP complete | Foundation (auth, DB schema, GitHub adapter, seed) |
+| **2** | ✅ MVP complete | Git Navigation (commit graph, file tree, revision URLs) |
+| **3** | ✅ MVP complete | Diff Workspace (compare, on-demand line diff) |
+| **4** | 🔄 In progress | Sync & Automation (webhooks, BullMQ, polling) |
 | **5** | ⬜ Planned | Workflow Intelligence (multi-repo, reports, search) |
 
 Track progress in `docs/PROGRESS.md`.

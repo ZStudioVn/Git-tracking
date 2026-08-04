@@ -18,6 +18,29 @@
 | Diff Viewer | react-diff-viewer-continued | latest |
 | Hosting | Docker / Vercel | — |
 
+## Local-first mode
+
+For a single developer tracking projects on one machine, run the Next.js app locally:
+
+```bash
+pnpm install
+pnpm prisma:generate
+pnpm prisma:migrate
+pnpm dev
+```
+
+Open `http://localhost:3000`. The local-project screen accepts a project folder path, checks for `.git`, and reads branch, HEAD, remote, and `git status` through the local Node process. Keep this app bound to localhost; do not expose the local-project API to the public internet. GitHub sync is optional and requires OAuth credentials.
+
+The current flow is:
+
+1. Start the local app and database.
+2. Open the web UI in a browser.
+3. Add one or more local project folders.
+4. The backend inspects each folder's Git metadata and stores status snapshots.
+5. Use the dashboard for tracking; local Git commands remain under the user's OS permissions.
+
+Cloud/server deployment is a separate mode for GitHub metadata and team dashboards. It cannot access a developer's local folders unless a separately installed local agent is added later.
+
 ## Project Structure
 
 ```

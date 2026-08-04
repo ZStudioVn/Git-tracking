@@ -70,9 +70,13 @@ openssl rand -base64 32  # For ENCRYPTION_KEY
 - Regular backups with encryption
 
 #### API Security
-- Rate limiting enabled by default
-- CORS configured appropriately
-- CSP headers enforced
+- Session authentication and per-user repository ownership checks are enforced on API routes
+- Zod runtime validation is used for repository, Git config, and Git commit inputs
+- CSP, frame, MIME-sniffing, referrer, permissions, and production HSTS headers are configured
+- GitHub commit writes require an authenticated user, repository ownership, bounded file/path input, and optional expected branch HEAD
+- The server never executes user-supplied shell commands and never force-pushes
+- Rate limiting is still required before public production deployment
+- CORS should be configured explicitly if the API is exposed cross-origin
 - Webhook signature verification required
 
 #### GitHub Integration
@@ -83,6 +87,20 @@ openssl rand -base64 32  # For ENCRYPTION_KEY
 - Monitor for revoked tokens
 
 ### Known Security Considerations
+
+#### Git command center
+- Local commands are suggestions copied to the user's terminal; they are not executed by the server.
+- Browser quick commit uses GitHub's Git Data API and updates only the selected branch with `force: false`.
+- `expectedHead` prevents overwriting a branch that changed after the dashboard was loaded.
+- File count, path traversal, path-root, message length, and file-size limits are enforced.
+- A GitHub App, least-privilege permissions, rate limiting, audit logging, and explicit confirmation are still required for production push workflows.
+
+#### Local project access
+- Local project APIs are intended for a localhost-only deployment. Do not expose them through a public reverse proxy.
+- Folder paths are resolved with `realpath` before Git inspection and Git commands use `git -C`; no shell interpolation is used.
+- The local backend reads Git metadata/status only; it does not upload source files by default.
+- Desktop builds use `contextIsolation`, disabled `nodeIntegration`, and a sandboxed renderer; only whitelisted IPC channels are exposed through the preload bridge.
+- A future remote/team mode must use a separately authenticated local agent rather than granting the cloud server filesystem access.
 
 #### GitHub API Rate Limits
 - Default: 5,000 requests/hour per token

@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
 - Initial project structure and configuration
 - Prisma schema for core data models
 - GitHub OAuth authentication setup
@@ -25,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - React components structure
 
 ### Phase 0 - Project Bootstrap ✅
+
 - [x] Next.js 14 App Router + TypeScript setup
 - [x] pnpm workspace configuration
 - [x] Linting and formatting tools
@@ -36,14 +38,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [x] Documentation organization
 
 ### Phase 1 - Foundation 🔄
-- [ ] Run initial database migration
-- [ ] Complete authentication flow
-- [ ] Implement GitHub adapter
-- [ ] Build sync worker
-- [ ] Create seed data
-- [ ] Test end-to-end authentication
+
+- [x] Run initial database migration
+- [x] Complete authentication flow
+- [x] Implement GitHub adapter
+- [x] Build DB-backed sync worker
+- [x] Create seed data
+- [ ] Test end-to-end authentication against configured GitHub OAuth credentials
 
 ### Upcoming
+
 - Phase 2: Git Navigation (commit graph, file tree, blame)
 - Phase 3: Diff Workspace (comparison, unified/split diff)
 - Phase 4: Sync & Automation (webhooks, BullMQ, scheduled polling)
@@ -53,12 +57,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Release History
 
-### [0.1.0] - TBD
+### [0.1.0] - Unreleased
+
 First MVP release (target: Phase 1-3 completion)
 
 ---
 
 **Legend:**
+
 - 🔄 In Progress
 - ✅ Completed
 - 🚧 Blocked

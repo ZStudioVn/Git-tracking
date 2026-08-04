@@ -14,12 +14,14 @@ Thank you for considering contributing to Git-Tracking! This guide will help you
 ## Development Setup
 
 ### Prerequisites
+
 - Node.js 20 LTS
 - pnpm 9.x
 - PostgreSQL 16
 - GitHub OAuth App credentials
 
 ### Quick Start
+
 ```bash
 # Clone the repository
 git clone https://github.com/ZStudioVn/Git-tracking.git
@@ -46,12 +48,14 @@ pnpm dev
 ## Code Standards
 
 ### TypeScript
+
 - Use strict mode (already configured)
 - Prefer interfaces over types for object shapes
 - Use explicit return types for public functions
 - Avoid `any` - use `unknown` if type is truly unknown
 
 ### Naming Conventions
+
 - **Files**: kebab-case (e.g., `rate-limit.ts`)
 - **Components**: PascalCase (e.g., `CommitGraph.tsx`)
 - **Functions**: camelCase (e.g., `fetchCommits()`)
@@ -59,6 +63,7 @@ pnpm dev
 - **Interfaces/Types**: PascalCase (e.g., `SyncJobStatus`)
 
 ### Code Organization
+
 ```
 src/lib/[domain]/
   ├── index.ts          # Public API exports
