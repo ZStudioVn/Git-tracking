@@ -31,7 +31,8 @@ export async function getLineDiff(
       return { path, patch: null, oversized: false, binary: true };
     }
 
-    if (file.changes > 10000) {
+    const patchSize = file.patch ? Buffer.byteLength(file.patch, 'utf8') : 0;
+    if (file.changes > 10000 || patchSize > MAX_BLOB_SIZE) {
       logger.warn({ path, changes: file.changes }, 'Diff too large, truncating');
       return { path, patch: null, oversized: true, binary: false };
     }

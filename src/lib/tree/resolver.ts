@@ -13,13 +13,8 @@ export async function resolveRevisionToTree(
   revision: string, // branch name, tag, or commit SHA
 ): Promise<string> {
   try {
-    const { data } = await octokit.git.getTree({
-      owner,
-      repo,
-      tree_sha: revision,
-      recursive: '0',
-    });
-    return data.sha;
+    const { data } = await octokit.repos.getCommit({ owner, repo, ref: revision });
+    return data.commit.tree.sha;
   } catch (err) {
     logger.error({ owner, repo, revision, err }, 'Failed to resolve revision to tree SHA');
     throw createAppError(AppError.TREE_RESOLVE_FAILED, `Cannot resolve revision: ${revision}`);

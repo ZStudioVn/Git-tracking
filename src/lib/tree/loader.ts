@@ -27,6 +27,7 @@ export async function loadTreeFolder(
   return (data.tree ?? []).map((item) => ({
     sha: item.sha ?? '',
     path: item.path ?? '',
+    name: (item.path ?? '').split('/').pop() ?? '',
     type: item.type === 'tree' ? 'tree' : 'blob',
     size: item.size,
     mode: item.mode ?? '',

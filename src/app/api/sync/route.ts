@@ -8,6 +8,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { logger } from '@/lib/logger';
+import { runSyncJob } from '@/lib/sync/worker';
 
 export async function POST() {
   const session = await getServerSession(authOptions);
@@ -24,6 +25,9 @@ export async function POST() {
       return NextResponse.json({ error: 'No repository connected' }, { status: 404 });
     }
 
+    const active = await db.syncJob.findFirst({ where: { repositoryId: repo.id, status: { in: ['PENDING', 'RUNNING'] } }, orderBy: { createdAt: 'desc' } });
+    if (active) return NextResponse.json({ jobId: active.id, status: active.status }, { status: 202 });
+
     // Create a sync job record (state machine — D-01)
     const job = await db.syncJob.create({
       data: {
@@ -35,7 +39,9 @@ export async function POST() {
 
     logger.info({ jobId: job.id, repoId: repo.id }, 'Manual sync job created');
 
-    // TODO Phase 2: wire up sync engine worker to pick up PENDING jobs
+    // Start immediately for serverless/manual usage. The DB job remains the source
+    // of truth, so a cron poller can safely pick it up if this process is interrupted.
+    void runSyncJob(job.id);
     return NextResponse.json({ jobId: job.id, status: 'PENDING' }, { status: 202 });
   } catch (err) {
     logger.error({ err }, 'POST /api/sync failed');
@@ -68,6 +74,7 @@ export async function GET() {
         errorMessage: true,
         retryCount: true,
         createdAt: true,
+        availableAt: true,
       },
     });
 

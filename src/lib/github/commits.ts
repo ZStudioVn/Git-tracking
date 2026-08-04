@@ -56,3 +56,20 @@ export async function fetchCommitsSince(
 
   return commits;
 }
+
+export async function fetchCommitFiles(
+  octokit: Octokit,
+  owner: string,
+  repo: string,
+  sha: string,
+): Promise<Array<{ path: string; oldPath: string | null; status: 'ADDED' | 'MODIFIED' | 'DELETED' | 'RENAMED' | 'COPIED' | 'UNCHANGED'; additions: number; deletions: number; binary: boolean }>> {
+  const { data } = await octokit.repos.getCommit({ owner, repo, ref: sha });
+  return (data.files ?? []).map((file) => ({
+    path: file.filename,
+    oldPath: file.previous_filename ?? null,
+    status: ({ added: 'ADDED', modified: 'MODIFIED', removed: 'DELETED', renamed: 'RENAMED', copied: 'COPIED' } as Record<string, 'ADDED' | 'MODIFIED' | 'DELETED' | 'RENAMED' | 'COPIED'>)[file.status] ?? 'MODIFIED',
+    additions: file.additions ?? 0,
+    deletions: file.deletions ?? 0,
+    binary: file.patch === undefined && (file.additions ?? 0) === 0 && (file.deletions ?? 0) === 0,
+  }));
+}

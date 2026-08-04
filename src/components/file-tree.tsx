@@ -9,19 +9,18 @@
 export interface TreeNode {
   path: string;
   type: 'tree' | 'blob';
-  name: string;
+  name?: string;
   sha: string;
   children?: TreeNode[];
 }
 
 interface Props {
   nodes: TreeNode[];
-  revision: string;
   onSelectFile?: (path: string, sha: string) => void;
   onExpandFolder?: (path: string) => void;
 }
 
-export function FileTree({ nodes, revision, onSelectFile, onExpandFolder }: Props) {
+export function FileTree({ nodes, onSelectFile, onExpandFolder }: Props) {
   if (nodes.length === 0) {
     return <p className="text-muted-foreground text-sm">Empty tree.</p>;
   }
@@ -35,14 +34,14 @@ export function FileTree({ nodes, revision, onSelectFile, onExpandFolder }: Prop
               className="w-full text-left"
               onClick={() => onExpandFolder?.(node.path)}
             >
-              📁 {node.name}
+              📁 {node.name ?? node.path.split('/').pop()}
             </button>
           ) : (
             <button
               className="w-full text-left"
               onClick={() => onSelectFile?.(node.path, node.sha)}
             >
-              📄 {node.name}
+              📄 {node.name ?? node.path.split('/').pop()}
             </button>
           )}
         </li>

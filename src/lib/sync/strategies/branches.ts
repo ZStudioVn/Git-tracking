@@ -19,7 +19,7 @@ export async function syncBranches(
   for (const branch of branches) {
     await db.branch.upsert({
       where: { repositoryId_name: { repositoryId, name: branch.name } },
-      update: { headSha: branch.headSha, isDefault: branch.isDefault },
+      update: { headSha: branch.headSha, isDefault: branch.isDefault, deletedAt: null },
       create: {
         repositoryId,
         name: branch.name,
@@ -28,6 +28,12 @@ export async function syncBranches(
       },
     });
   }
+
+  const remoteNames = branches.map((branch) => branch.name);
+  await db.branch.updateMany({
+    where: { repositoryId, ...(remoteNames.length ? { name: { notIn: remoteNames } } : {}) },
+    data: { deletedAt: new Date() },
+  });
 
   logger.info({ repositoryId, count: branches.length }, 'Branches synced');
 }

@@ -20,6 +20,7 @@ export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
   const revision = searchParams.get('revision') ?? 'HEAD';
   const treeSha = searchParams.get('treeSha'); // if already resolved, skip resolution
+  const path = searchParams.get('path');
 
   try {
     const repo = await db.repository.findFirst({ where: { userId: session.user.id } });
@@ -27,9 +28,21 @@ export async function GET(req: NextRequest) {
 
     const octokit = await createOctokitForUser(session.user.id);
     const resolvedTreeSha = treeSha ?? await resolveRevisionToTree(octokit, repo.owner, repo.name, revision);
-    const nodes = await loadTreeFolder(octokit, repo.owner, repo.name, resolvedTreeSha);
+    let folderSha = resolvedTreeSha;
+    if (path) {
+      for (const segment of path.split('/').filter(Boolean)) {
+        const children = await loadTreeFolder(octokit, repo.owner, repo.name, folderSha);
+        const node = children.find((entry) => entry.name === segment);
+        if (!node) return NextResponse.json({ error: 'Path not found' }, { status: 404 });
+        if (node.type === 'blob') {
+          return NextResponse.json({ treeSha: node.sha, nodes: [node], revision, path });
+        }
+        folderSha = node.sha;
+      }
+    }
+    const nodes = await loadTreeFolder(octokit, repo.owner, repo.name, folderSha);
 
-    return NextResponse.json({ treeSha: resolvedTreeSha, nodes });
+    return NextResponse.json({ treeSha: folderSha, nodes, revision, path: path ?? '' });
   } catch (err) {
     logger.error({ err, revision }, 'GET /api/tree failed');
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

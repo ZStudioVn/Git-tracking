@@ -7,13 +7,13 @@
  *   - read:user
  *   - read:org (optional, for org repos)
  */
-import NextAuth from 'next-auth';
+import NextAuth, { type NextAuthConfig } from 'next-auth';
 import GitHub from 'next-auth/providers/github';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import { prisma } from '@/lib/db';
 import { encryptToken } from '@/lib/utils/crypto';
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
+export const authOptions: NextAuthConfig = {
   adapter: PrismaAdapter(prisma),
   providers: [
     GitHub({
@@ -49,4 +49,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       }
     },
   },
-});
+};
+
+export const { handlers, auth, signIn, signOut } = NextAuth(authOptions);

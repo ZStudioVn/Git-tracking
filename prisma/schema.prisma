@@ -97,8 +97,10 @@ model Branch {
   headSha      String
   isDefault    Boolean  @default(false)
   updatedAt    DateTime @updatedAt
+  deletedAt    DateTime?
 
   repository Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  commits    BranchCommit[]
 
   @@unique([repositoryId, name])
 }
@@ -133,9 +135,20 @@ model Commit {
   parents    CommitParent[] @relation("CommitParents")
   children   CommitParent[] @relation("CommitChildren")
   files      CommitFile[]
+  branches   BranchCommit[]
 
   @@unique([repositoryId, sha])
   @@index([repositoryId, committedAt])
+}
+
+model BranchCommit {
+  branchId String
+  commitId String
+  branch   Branch @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  commit   Commit @relation(fields: [commitId], references: [id], onDelete: Cascade)
+
+  @@id([branchId, commitId])
+  @@index([commitId])
 }
 
 model CommitParent {
@@ -216,6 +229,7 @@ model SyncJob {
   retryCount   Int           @default(0)
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
+  availableAt  DateTime       @default(now())
 
   repository Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
 

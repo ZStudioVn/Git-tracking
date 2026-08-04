@@ -9,6 +9,7 @@ export interface TreeNode {
   type: 'blob' | 'tree';
   size?: number;
   mode: string;
+  name?: string;
 }
 
 export interface GitBranch {
