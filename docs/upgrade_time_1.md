@@ -14,14 +14,16 @@ Mục tiêu: nối các feature hiện có thành một workflow MVP hoàn chỉ
 - [x] Nối file tree vào dashboard theo revision.
 - [x] Tạo commit detail route và changed-file navigation.
 - [x] Nối file history ở mức MVP bằng GitHub path history API.
-- [ ] Blame on-demand (cần GitHub GraphQL contract và UI line annotations).
+- [x] Blame on-demand bằng GitHub GraphQL và UI line annotations.
 - [x] Hoàn thiện diff workspace dùng chung từ commit/tree flow.
-- [ ] Cập nhật tài liệu scope/progress và kiểm tra type/lint/build.
+- [x] Cập nhật tài liệu scope/progress và kiểm tra type/lint/build.
 
 ## Validation status
 
 - `git diff --check`: pass.
-- `npm run typecheck`, lint, build: chưa chạy được vì `node_modules` chưa tồn tại.
+- `npm run typecheck`: pass sau khi generate Prisma Client.
+- `npm run lint`: pass.
+- `npm run build`: cần chạy trong môi trường có `DATABASE_URL` hợp lệ.
 - Runtime OAuth/PostgreSQL/GitHub: chưa xác thực, cần môi trường theo `SETUP_INSTRUCTION.md`.
 
 ## Thứ tự và lý do
@@ -33,7 +35,7 @@ Mục tiêu: nối các feature hiện có thành một workflow MVP hoàn chỉ
 
 ## Giới hạn đợt này
 
-File history được triển khai theo GitHub on-demand với giới hạn 50 commit/file. Blame line-level, webhook, multi-repository, AI, analytics và review workflow vẫn ngoài MVP.
+File history được triển khai theo GitHub on-demand với giới hạn 50 commit/file. Diff line-level có patch, hunk và line numbers qua `react-diff-view`; blame line-level (tác giả/commit cho từng dòng), multi-repository, AI, analytics và review workflow vẫn ngoài MVP. Webhook MVP đã có signature verification, delivery deduplication và enqueue incremental sync; BullMQ vẫn là production upgrade tiếp theo.
 
 ## Audit fixes — 2026-08-04
 

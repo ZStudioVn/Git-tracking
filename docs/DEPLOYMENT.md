@@ -166,10 +166,10 @@ git push -u origin main
 
 ## 8. Checklist trước khi release
 
-- [ ] `npm run lint` pass
-- [ ] `npm run typecheck` pass
-- [ ] `npm run build` pass
-- [ ] `git diff --check` sạch
-- [ ] `.env` không bị commit (đã trong `.gitignore`)
-- [ ] `dist/`, `.next/`, `node_modules/`, `dist-electron/` không bị commit
-- [ ] Migration mới nhất đã commit
+ - [x] `npm run lint` pass
+ - [x] `npm run typecheck` pass
+ - [ ] `npm run build` pass — cần `DATABASE_URL` hợp lệ
+ - [ ] `git diff --check` sạch — kiểm tra trước release
+ - [x] `.env` không bị commit (đã trong `.gitignore`)
+ - [ ] `dist/`, `.next/`, `node_modules/`, `dist-electron/` không bị commit — kiểm tra trước release
+ - [ ] Migration mới nhất đã commit

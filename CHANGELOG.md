@@ -24,6 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Diff service structure
 - Tree service structure
 - React components structure
+- On-demand GitHub GraphQL blame with line-level commit annotations
+- Persistent system logs with severity filters and secret redaction
 
 ### Phase 0 - Project Bootstrap ✅
 

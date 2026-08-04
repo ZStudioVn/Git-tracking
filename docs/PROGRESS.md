@@ -30,6 +30,14 @@
 
 **Trạng thái:** ⬜ Chưa bắt đầu · 🔄 Đang làm · ✅ Hoàn thành · ❌ Blocked
 
+### System observability
+
+- ✅ Structured Pino logs to stdout with configurable `LOG_LEVEL`.
+- ✅ Persisted `SystemLog` records for sync and webhook events.
+- ✅ Secret-redacted context and user-scoped log API at `/api/system-logs`.
+- ✅ Dashboard log viewer with INFO/WARN/ERROR filtering.
+- ⬜ Production retention/archival job and external log shipping.
+
 ---
 
 ## Phase 0 — Project Bootstrap
@@ -184,8 +192,8 @@
 | 3B-04 | Whitespace toggle, collapse unchanged context | ⬜ | |
 | 3B-05 | Binary / large file fallback message | ⬜ | |
 | 3B-06 | `src/app/dashboard/diff/page.tsx` — diff workspace route | ⬜ | |
-| 3B-07 | Blame annotations trong file view | ⬜ | D-07 |
-| 3B-08 | File history view (commits touching a file) | ⬜ | D-07 |
+| 3B-07 | Blame annotations trong file view | ✅ | GitHub GraphQL blame ranges, expanded to line annotations |
+| 3B-08 | File history view (commits touching a file) | ✅ | GitHub path history API |
 
 **Output của Phase 3:** User có thể chọn 2 commits/branches → xem full diff với changed-file tree.
 
@@ -208,17 +216,17 @@
 
 | # | Task | Trạng thái | Ghi chú |
 |---|---|---|---|
-| 4B-01 | `src/lib/github/webhooks.ts` — signature verification | ⬜ | |
-| 4B-02 | `src/app/api/webhooks/route.ts` — webhook receiver | ⬜ | |
-| 4B-03 | Webhook delivery ID deduplication | ⬜ | |
+| 4B-01 | `src/lib/github/webhooks.ts` — signature verification | ✅ | HMAC-SHA256, constant-time comparison |
+| 4B-02 | `src/app/api/webhooks/route.ts` — webhook receiver | ✅ | Push/branch/release/PR events enqueue incremental sync |
+| 4B-03 | Webhook delivery ID deduplication | ✅ | Unique `WebhookDelivery.deliveryId` |
 | 4B-04 | Token revocation handler (401 → pause + notify) | ⬜ | Theo SETUP.md §9 |
 
 ### 4C — Sync UI
 
 | # | Task | Trạng thái | Ghi chú |
 |---|---|---|---|
-| 4C-01 | `src/components/sync-status.tsx` — status + timestamp + errors | ⬜ | |
-| 4C-02 | Retry button cho failed sync jobs | ⬜ | |
+| 4C-01 | `src/components/sync-status.tsx` — status + timestamp + errors | ✅ | Existing widget polls job status |
+| 4C-02 | Retry button cho failed sync jobs | ✅ | `PATCH /api/sync` creates a fresh job |
 | 4C-03 | Sync timeline / event log | ⬜ | |
 | 4C-04 | \"Reconnect GitHub\" flow khi token expired | ⬜ | |
 

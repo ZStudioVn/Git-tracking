@@ -104,20 +104,20 @@ Advanced comparison and diff viewing.
 
 ### 🔄 Phase 4: Sync & Automation (IN PROGRESS)
 **Timeline:** Week 14-17  
-**Status:** MVP DB-backed polling complete; webhook/BullMQ production upgrade pending
+**Status:** MVP DB-backed polling + webhook receiver/retry UI complete; BullMQ production upgrade pending
 
 Background jobs, webhooks, and automatic updates.
 
 #### Planned Features
 - [ ] Scheduled polling (cron-based)
-- [ ] GitHub webhook endpoint
-- [ ] Webhook signature verification
+- [x] GitHub webhook endpoint
+- [x] Webhook signature verification
 - [ ] BullMQ + Redis job queue
 - [ ] Background sync worker
-- [ ] Retry logic with exponential backoff
-- [ ] Sync status dashboard
+- [x] Retry logic with exponential backoff
+- [x] Sync status dashboard
 - [ ] Error notifications
-- [ ] Manual sync trigger
+- [x] Manual sync trigger
 
 #### Technical Focus
 - Replace plain cron with BullMQ
