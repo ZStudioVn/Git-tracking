@@ -5,6 +5,7 @@
  */
 
 import { useEffect, useState } from 'react';
+import { useToast } from '@/components/toast';
 
 interface SyncJob {
   id: string;
@@ -18,28 +19,31 @@ interface SyncJob {
   availableAt: string;
 }
 
-interface Props {
-  repositoryId: string;
-}
-
-export function SyncStatus({ repositoryId }: Props) {
+export function SyncStatus() {
   const [jobs, setJobs] = useState<SyncJob[]>([]);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
+  const toast = useToast();
 
   useEffect(() => {
-    fetchJobs();
+    const controller = new AbortController();
+    void fetchJobs(controller.signal);
     // Poll every 10 seconds
-    const interval = setInterval(fetchJobs, 10000);
-    return () => clearInterval(interval);
+    const interval = setInterval(() => void fetchJobs(controller.signal), 10000);
+    return () => {
+      controller.abort();
+      clearInterval(interval);
+    };
   }, []);
 
-  const fetchJobs = async () => {
+  const fetchJobs = async (signal?: AbortSignal) => {
     try {
-      const res = await fetch('/api/sync');
+      const res = await fetch('/api/sync', { signal });
+      if (!res.ok) throw new Error('Failed to fetch sync jobs');
       const data = await res.json();
       setJobs(data.jobs || []);
     } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') return;
       console.error('Failed to fetch sync jobs:', err);
     } finally {
       setLoading(false);
@@ -55,12 +59,13 @@ export function SyncStatus({ repositoryId }: Props) {
       if (res.ok) {
         // Refresh jobs list
         await fetchJobs();
+        toast.success('Sync started');
       } else {
-        alert(`Sync failed: ${data.error}`);
+        toast.error(`Sync failed: ${data.error}`);
       }
     } catch (err) {
       console.error('Failed to trigger sync:', err);
-      alert('Failed to trigger sync');
+      toast.error('Failed to trigger sync');
     } finally {
       setSyncing(false);
     }

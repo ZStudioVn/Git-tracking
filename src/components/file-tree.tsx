@@ -16,6 +16,7 @@ export interface TreeNode {
 
 interface Props {
   nodes: TreeNode[];
+  revision?: string;
   onSelectFile?: (path: string, sha: string) => void;
   onExpandFolder?: (path: string) => void;
 }

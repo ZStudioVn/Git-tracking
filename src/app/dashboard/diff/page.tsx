@@ -39,16 +39,26 @@ export default function DiffPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (base && head) {
-      fetchComparison();
-    }
-  }, [base, head]);
+    if (!base || !head) return;
 
-  const fetchComparison = async () => {
+    const controller = new AbortController();
+    void fetchComparison(base, head, path, controller.signal);
+    return () => controller.abort();
+  }, [base, head, path]);
+
+  const fetchComparison = async (
+    baseRevision: string,
+    headRevision: string,
+    selectedPath: string | null,
+    signal: AbortSignal,
+  ) => {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch(`/api/diff?base=${base}&head=${head}`);
+      const res = await fetch(
+        `/api/diff?base=${encodeURIComponent(baseRevision)}&head=${encodeURIComponent(headRevision)}`,
+        { signal },
+      );
       const data = await res.json();
 
       if (!res.ok) {
@@ -56,15 +66,22 @@ export default function DiffPage() {
       }
 
       const result = data.comparison as Comparison;
-      if (path) {
-        const patchResponse = await fetch(`/api/diff?base=${encodeURIComponent(base!)}&head=${encodeURIComponent(head!)}&path=${encodeURIComponent(path)}`);
+      if (selectedPath) {
+        const patchResponse = await fetch(
+          `/api/diff?base=${encodeURIComponent(baseRevision)}&head=${encodeURIComponent(headRevision)}&path=${encodeURIComponent(selectedPath)}`,
+          { signal },
+        );
+        if (!patchResponse.ok) {
+          throw new Error('Failed to fetch file diff');
+        }
         const patchData = await patchResponse.json();
-        const selected = result.files.find((file) => file.path === path);
+        const selected = result.files.find((file) => file.path === selectedPath);
         if (selected && patchData.lineDiff) Object.assign(selected, patchData.lineDiff);
       }
       setComparison(result);
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') return;
+      setError(err instanceof Error ? err.message : 'Failed to fetch comparison');
     } finally {
       setLoading(false);
     }

@@ -6,6 +6,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { LocalProjects } from '@/components/local-projects';
 
 export default function SetupPage() {
   const router = useRouter();
@@ -34,8 +35,8 @@ export default function SetupPage() {
 
       // Redirect to dashboard after successful connection
       router.push('/dashboard');
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to connect repository');
     } finally {
       setLoading(false);
     }
@@ -43,7 +44,7 @@ export default function SetupPage() {
 
   return (
     <main className="min-h-screen flex items-center justify-center p-6 bg-gray-50">
-      <div className="w-full max-w-md bg-white rounded-lg shadow-lg p-8">
+      <div className="w-full max-w-2xl bg-white rounded-lg shadow-lg p-8">
         <h1 className="text-3xl font-bold mb-2">Connect Repository</h1>
         <p className="text-gray-600 mb-6">
           Enter the GitHub repository you want to track. Make sure you have access to it.
@@ -94,6 +95,7 @@ export default function SetupPage() {
             {loading ? 'Connecting...' : 'Connect Repository'}
           </button>
         </form>
+        <LocalProjects />
 
         <div className="mt-6 text-sm text-gray-500">
           <p className="font-medium mb-1">Note:</p>
