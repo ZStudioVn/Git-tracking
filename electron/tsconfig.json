@@ -1,0 +1,11 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "outDir": "../dist-electron",
+    "types": ["node"]
+  },
+  "include": ["main.ts", "preload.ts", "services/**/*.ts"]
+}

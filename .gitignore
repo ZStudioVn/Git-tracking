@@ -11,6 +11,9 @@ coverage/
 out/
 build/
 dist/
+dist-electron/
+*.tsbuildinfo
+next-env.d.ts
 
 # Production
 .vercel

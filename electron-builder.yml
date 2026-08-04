@@ -1,0 +1,26 @@
+appId: com.git.tracking
+productName: Git Tracking
+directories:
+  output: release
+  buildResources: build
+files:
+  - dist-electron/**
+  - .next/**
+  - package.json
+  - "!node_modules/.cache/**"
+win:
+  target:
+    - nsis
+  artifactName: ${productName}-${version}-setup.${ext}
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+mac:
+  category: public.app-category.developer-tools
+  target:
+    - dmg
+linux:
+  target:
+    - AppImage
+    - deb
+  category: Development

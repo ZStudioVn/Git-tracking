@@ -2,6 +2,7 @@
   "name": "git-tracking",
   "version": "0.1.0",
   "private": true,
+  "main": "dist-electron/main.js",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -14,7 +15,15 @@
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "tsx prisma/seed.ts",
     "db:push": "prisma db push",
-    "db:studio": "prisma studio"
+    "db:studio": "prisma studio",
+    "electron:typecheck": "tsc --noEmit -p electron/tsconfig.json",
+    "desktop:compile": "tsc -p electron/tsconfig.json",
+    "desktop:dev": "concurrently \"next dev\" \"wait-on http://localhost:3000 && electron .\"",
+    "desktop:build": "next build && npm run desktop:compile",
+    "desktop:package": "npm run desktop:build && electron-builder",
+    "desktop:win": "npm run desktop:build && electron-builder --win",
+    "desktop:mac": "npm run desktop:build && electron-builder --mac",
+    "desktop:linux": "npm run desktop:build && electron-builder --linux"
   },
   "dependencies": {
     "next": "^14.2.0",
@@ -51,10 +60,18 @@
     "vitest": "^2.1.0",
     "@vitest/coverage-v8": "^2.1.0",
     "@testing-library/react": "^16.0.0",
+    "@vitejs/plugin-react": "^4.3.4",
+    "jsdom": "^25.0.1",
     "tailwindcss": "^3.4.0",
     "postcss": "^8",
     "autoprefixer": "^10",
-    "tsx": "^4.19.0"
+    "tsx": "^4.19.0",
+    "electron": "^33.0.0",
+    "electron-builder": "^25.1.8",
+    "concurrently": "^9.1.0",
+    "chokidar": "^4.0.1",
+    "electron-store": "^10.0.0",
+    "wait-on": "^8.0.1"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
