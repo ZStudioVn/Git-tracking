@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
 
 export async function GET(_req: NextRequest, { params }: { params: { sha: string } }) {
-  const session = await getServerSession(authOptions);
+  const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   const repo = await db.repository.findFirst({ where: { userId: session.user.id } });
   if (!repo) return NextResponse.json({ error: 'No repository connected' }, { status: 404 });

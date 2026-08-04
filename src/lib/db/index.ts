@@ -15,3 +15,6 @@ export const prisma =
 if (process.env.NODE_ENV !== 'production') {
   globalForPrisma.prisma = prisma;
 }
+
+// Keep the short `db` name used by route and service modules.
+export const db = prisma;

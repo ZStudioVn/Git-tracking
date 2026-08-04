@@ -13,12 +13,15 @@ import { PrismaAdapter } from '@auth/prisma-adapter';
 import { prisma } from '@/lib/db';
 import { encryptToken } from '@/lib/utils/crypto';
 
+const githubClientId = process.env.GITHUB_CLIENT_ID ?? '';
+const githubClientSecret = process.env.GITHUB_CLIENT_SECRET ?? '';
+
 export const authOptions: NextAuthConfig = {
   adapter: PrismaAdapter(prisma),
   providers: [
     GitHub({
-      clientId: process.env.GITHUB_CLIENT_ID!,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET!,
+      clientId: githubClientId,
+      clientSecret: githubClientSecret,
       authorization: {
         params: {
           scope: 'read:user repo',
@@ -27,6 +30,12 @@ export const authOptions: NextAuthConfig = {
     }),
   ],
   callbacks: {
+    async signIn() {
+      if (!githubClientId || !githubClientSecret) {
+        throw new Error('GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET are required');
+      }
+      return true;
+    },
     async session({ session, user }) {
       session.user.id = user.id;
       return session;

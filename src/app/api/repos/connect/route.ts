@@ -4,8 +4,7 @@
  * Creates Repository record and triggers initial sync.
  */
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { createOctokitForUser } from '@/lib/github/client';
 import { logger } from '@/lib/logger';
@@ -17,7 +16,7 @@ const connectSchema = z.object({
 });
 
 export async function POST(req: NextRequest) {
-  const session = await getServerSession(authOptions);
+  const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
@@ -81,13 +80,17 @@ export async function POST(req: NextRequest) {
       syncJobId: syncJob.id,
     }, { status: 201 });
 
-  } catch (err: any) {
+  } catch (err) {
     logger.error({ err }, 'POST /api/repos/connect failed');
-    
-    if (err.status === 404) {
+
+    if (isGitHubNotFoundError(err)) {
       return NextResponse.json({ error: 'Repository not found or access denied' }, { status: 404 });
     }
     
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
+}
+
+function isGitHubNotFoundError(error: unknown): error is { status: number } {
+  return typeof error === 'object' && error !== null && 'status' in error && error.status === 404;
 }

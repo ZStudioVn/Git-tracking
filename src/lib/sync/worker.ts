@@ -86,24 +86,25 @@ export async function runSyncJob(jobId: string): Promise<void> {
       'Sync job completed'
     );
 
-  } catch (error: any) {
-    const duration = Date.now() - startTime;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown sync error';
+    const stack = error instanceof Error ? error.stack : undefined;
 
-    logger.error({ jobId, error: error.message, stack: error.stack }, 'Sync job failed');
+    logger.error({ jobId, error: message, stack }, 'Sync job failed');
 
     await db.syncJob.update({
       where: { id: jobId },
       data: {
         status: 'FAILED',
         completedAt: new Date(),
-        errorMessage: error.message,
+        errorMessage: message,
         retryCount: { increment: 1 },
       },
     });
 
     // Make temporary failures visible to the poller again with bounded retries.
     const updatedJob = await db.syncJob.findUnique({ where: { id: jobId } });
-    const isAuthFailure = /401|403|token|GitHub account is not connected/i.test(error.message);
+    const isAuthFailure = /401|403|token|GitHub account is not connected/i.test(message);
     if (isAuthFailure) {
       await db.syncJob.update({ where: { id: jobId }, data: { status: 'STALE' } });
     }

@@ -5,8 +5,7 @@
  * All params are included in URL for shareability. (D-08)
  */
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { auth } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { createOctokitForUser } from '@/lib/github/client';
 import { compareRevisions } from '@/lib/diff/compare';
@@ -14,7 +13,7 @@ import { getLineDiff } from '@/lib/diff/line-diff';
 import { logger } from '@/lib/logger';
 
 export async function GET(req: NextRequest) {
-  const session = await getServerSession(authOptions);
+  const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }

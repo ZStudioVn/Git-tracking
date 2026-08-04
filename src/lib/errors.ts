@@ -34,9 +34,24 @@ export enum AppErrorCode {
   VALIDATION_ERROR = 'VALIDATION_ERROR',
   NOT_FOUND = 'NOT_FOUND',
   INTERNAL_ERROR = 'INTERNAL_ERROR',
+  RATE_LIMITED = 'RATE_LIMITED',
+  TREE_RESOLVE_FAILED = 'TREE_RESOLVE_FAILED',
+}
+
+export function createAppError(
+  code: AppErrorCode,
+  message: string,
+  statusCode = 500,
+  context?: Record<string, unknown>,
+): AppError {
+  return new AppError(code, message, statusCode, context);
 }
 
 export class AppError extends Error {
+  static readonly DIFF_TOO_LARGE = AppErrorCode.DIFF_TOO_LARGE;
+  static readonly RATE_LIMITED = AppErrorCode.RATE_LIMITED;
+  static readonly TREE_RESOLVE_FAILED = AppErrorCode.TREE_RESOLVE_FAILED;
+
   readonly code: AppErrorCode;
   readonly statusCode: number;
   readonly context?: Record<string, unknown>;
